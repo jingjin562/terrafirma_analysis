@@ -21,7 +21,7 @@ from terrafirma_analysis.utils.conversions import kg_per_m2_per_s_to_Gt_per_yr
 
 _PKG_DIR = list(terrafirma_analysis.__path__)[0]
 MASK_PATH = os.path.join(_PKG_DIR, 'utils', 'masks', 'Global_Ocean_sections_mask.nc')
-
+ISF_MASK_PATH = os.path.join(_PKG_DIR, 'utils', 'masks', 'nemo_cavity_mask.nc')
 
 def _read_isf(file_dir, suite_id, y, var_read, so_slice=False):
     ds = open_isf_file(file_dir, suite_id, y)
@@ -44,6 +44,24 @@ def read_isf(suite_id, file_dir, var_read):
 
     return var
 
+def read_SO_shelf_sectors_isf(suite_id, file_dir, var_read, region=None):
+    
+    year_start, year_end = time_coverage(suite_id)
+    year = np.arange(year_start, year_end, 1)
+    var = np.empty([len(year), 113, 362])
+    
+    if region is None:
+        print('No region is given, read the entire Southern Ocean shelf seas')
+        return read_isf(suite_id, file_dir, var_read)    
+    else:
+        with nc.Dataset(ISF_MASK_PATH, 'r') as ds_mask:
+            cavity_mask = ds_mask.variables[f'mask_{region}'][:113, :]
+            var = read_isf(suite_id, file_dir, var_read)
+            
+            # apply the 2D mask to every year at once (broadcasts over axis 0)
+            var = np.ma.masked_where(np.broadcast_to(cavity_mask == 0, var.shape), var)
+        
+        return var
 
 def read_global_isf(suite_id, file_dir, var_read):
 
@@ -109,9 +127,16 @@ def nemo_isf_timeseries(suite_id, file_dir, var_read,
     isf = prep_isf_var(suite_id, file_dir, var_read,
                        if_SO=if_SO, if_continental_shelf=if_continental_shelf,
                        if_global=if_global, if_Arctic_ocean=if_Arctic_ocean)
-
-    timeseries = np.sum(kg_per_m2_per_s_to_Gt_per_yr(-isf, area), axis=(1,2))
-
+    
+    if var_read == 'sowflisf':
+        timeseries = np.sum(kg_per_m2_per_s_to_Gt_per_yr(-isf, area), axis=(1,2))
+    elif var_read == 'sohflisf':
+        timeseries = np.sum(-isf*area, axis=(1,2))
+    
+    # --- bad data in cx209 ---
+    if suite_id == 'cx209':
+        timeseries[342] = np.nan
+    
     return timeseries
 
 
@@ -138,21 +163,3 @@ def write_isf_timeseries(suite_id, file_dir, var_read, path_out, filename_out, v
 
     return print(f'{os.path.join(path_out, filename_out)} is created. \n {varout_name} is saved.')
 
-
-def main():
-    suite_id = 'cx209'
-    var_dir = 'sowflisf'
-    file_dir = f'/home/jingjin/work/terrafirma/{suite_id}/{var_dir}/'
-    var_read = 'sowflisf'
-
-    path_out = "/home/jingjin/work/postpro/misc_data/"
-    filename_out = f"{suite_id}_test_timeseries.nc"
-
-    varout_name = 'basal_mass_loss'
-    units = 'Gt/yr'
-
-    write_isf_timeseries(suite_id, file_dir, var_read, path_out, filename_out, varout_name, units)
-
-
-if __name__ == "__main__":
-    main()

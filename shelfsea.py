@@ -68,7 +68,8 @@ def AIS_continental_shelf(suite_id, slope_isobathy=1200, if_global=False,
     bathy_openocean = np.where(isf_draft != 0, 0, bathy_isf)
     shelfsea = np.where(bathy_openocean > slope_isobathy, 0, bathy_openocean)
     shelfsea[97:, ] = 0
-
+    shelfsea[90:95, 241:246] = 0
+    shelfsea[79:82, 90:93] = 0
     if if_return_bathy:
         return {
             'bathy_isf': bathy_isf.copy(),   # copies: the cached arrays are shared

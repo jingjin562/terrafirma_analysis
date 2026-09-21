@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-run_cz826_sectors.py  --  batch shelf-SECTOR diagnostics for suite cz826.
+run_{suite_id}_sectors.py  --  batch shelf-SECTOR diagnostics for suite cz826.
 
 Uses the engine in run_sectors.py. Every variable is run for all 10 Antarctic
 shelf sectors via run_all_regions, and everything lands in ONE consolidated
@@ -23,10 +23,6 @@ from terrafirma_analysis.run_sectors import Config, run_all_regions
 def main():
     cfg = Config(suite_id="cx209")
     
-    # ---- basal mass loss ----
-    run_all_regions(cfg.but(var_dir="sowflisf", var_read="sowflisf",
-                            task="sector_2d", varname_out='massloss')) 
-   
     # --- 3D depth-band means (T-grid) ---
     run_all_regions(cfg.but(
         var_dir="thetao+so", var_read="so", task="sector_3d",
@@ -72,6 +68,7 @@ def main():
     run_all_regions(cfg.but(filename_out=hov_dir, var_dir="thetao+so", var_read="thetao",
                             varname_out="thetao_hov", units_out="degree_C",
                             task="sector_hovemoller"))
+
 
 if __name__ == "__main__":
     main()

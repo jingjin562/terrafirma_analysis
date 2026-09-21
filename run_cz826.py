@@ -14,8 +14,8 @@ from terrafirma_analysis.run_timeseries import Config, run
 
 
 def main():
-    cfg = Config(suite_id="cx209", isf_var_dir='sowflisf', region="shelf")
-    
+    cfg = Config(suite_id="cz826", isf_var_dir='sowflisf', region="global")
+
     # --- 3D salinity / temperature, depth-band means ---
     
     run(cfg.but(var_dir="thetao+so",
@@ -64,6 +64,13 @@ def main():
     run(cfg.but(filename_out=hov, var_dir="thetao+so",
                 var_read='thetao', units_out='degree_C', task="hovemoller"))
 
+    # --- circulation strength ----
+    
+    run(cfg.but(task="AMOC_strength"))
+    run(cfg.but(task="SMOC_strength"))
+    run(cfg.but(task="lower_cell_strength"))
+    run(cfg.but(task="DrakePassage"))
+    run(cfg.but(task='amoc_pathways'))
     
 if __name__ == "__main__":
     main()

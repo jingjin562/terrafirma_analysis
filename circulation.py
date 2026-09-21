@@ -15,9 +15,11 @@ from terrafirma_analysis.nemo_diaptr import *
 from terrafirma_analysis.io_core import create_dimensions_3d, create_variables_3d
 
 _GEODEF = {
-    'AMOC':         228,                 # lat 26.5 N
+    'AMOC_265N':    228,                 # lat 26.5 N
+    'AMOC_345S':    134,                 # lat 34.5 S
     'lower_cell':   139,                 # lat 30 S
     'SMOC':         105,                 # lat 55 S
+    'Equator':      186,                 # lat 0
     'DrakePassage': (219, 79, 107),      # lon, lat1, lat2
 }
 

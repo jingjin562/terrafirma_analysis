@@ -73,8 +73,8 @@ class Config:
     var_read: str = ""
     varname_out: Optional[Union[str, dict]] = None
     units_out: str = ""
-    path_out: str = "/home/jingjin/work/postpro/misc_data/"
-    base_dir: str = "/home/jingjin/work/terrafirma"
+    path_out: str = "/home/users/jingj/work/terrafirma_timeseries"
+    base_dir: str = "/gws/ssde/j25b/ocean_ice/jjin/archer2"
     # Suite dir name is f"{suite_prefix}{suite_id}"; set suite_prefix="u-" for
     # the ARCHER2 single-tree layout (.../u-<suite>/<cycle>/nemo_...grid-T.nc).
     suite_prefix: str = ""

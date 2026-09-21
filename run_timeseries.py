@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+A small config-driven entry point: instead of hand-toggling the four
+if_SO / if_continental_shelf / if_global / if_Arctic_ocean flags for every call,
+you pick one `task` and one `region`. The underlying write_* functions are used
+unchanged, so the scientific output is identical -- only the way you *ask* for
+it changes.
+
+This module is the reusable engine (Config, REGIONS, TASKS, run). Put the actual
+batch of runs for a given suite in its own job script that imports from here --
+see run_cz826.py for an example.
+
 Quick start
 -----------
     from run_timeseries import Config, run
@@ -25,6 +35,7 @@ Batch several diagnostics in one go:
     run(cfg.but(task="nemo_2d", var_read="sos", varname_out="sos", units_out="psu"))
 """
 
+import os
 from dataclasses import dataclass, replace
 from typing import Optional, Union
 
@@ -74,31 +85,49 @@ class Config:
     var_read: str = ""
     varname_out: Optional[Union[str, dict]] = None
     units_out: str = ""
-    path_out: str = "/home/jingjin/work/postpro/misc_data/"
-    base_dir: str = "/home/jingjin/work/terrafirma"
+    path_out: str = "/home/users/jingj/work/terrafirma_timeseries"
+    base_dir: str = "/gws/ssde/j25b/ocean_ice/jjin/archer2"
+    # Suite directory name is f"{suite_prefix}{suite_id}" -- set suite_prefix="u-"
+    # for the ARCHER2 layout (.../u-dn026/<cycle>/nemo_dn026o_1y_..._grid-T.nc).
+    suite_prefix: str = ""
     filename_out: Optional[str] = None   # auto-derived from region if left None
     # Ice-shelf (sowflisf / isf-T) files may live apart from the grid-T fields.
-    # Set one of these for the FW tasks (total_*, all_FW) when that's the case;
-    # otherwise the isf files are assumed to sit alongside the others.
+    # Only needed when var_dir splits the output by variable; in a single-tree
+    # layout (var_dir empty) the isf files sit in the same tree and are found
+    # automatically.
     isf_dir: Optional[str] = None         # explicit full path, or
-    isf_var_dir: Optional[str] = None     # a sub-dir under base_dir/<suite_id>/
+    isf_var_dir: Optional[str] = None     # a sub-dir under base_dir/<suite>/
+
+    @property
+    def suite_dir(self) -> str:
+        return os.path.normpath(
+            os.path.join(self.base_dir, f"{self.suite_prefix}{self.suite_id}"))
 
     @property
     def file_dir(self) -> str:
-        return f"{self.base_dir}/{self.suite_id}/{self.var_dir}/"
+        # var_dir is optional: when empty, every stream lives in one tree and the
+        # (recursive) file search picks the right file out of the cycle dirs.
+        # normpath keeps the result free of '//' when base_dir has a trailing
+        # slash or var_dir is empty.
+        return os.path.normpath(os.path.join(self.suite_dir, self.var_dir)) + os.sep
 
     @property
     def isf_dir_explicit(self) -> Optional[str]:
-        """The isf directory *only* if one was given, else None.
+        """The isf directory *only* if one is needed, else None.
 
         The FW writers fall back to file_dir, while the 3D readers fall back to
         their own archive path, so tasks that use the latter must pass None
-        rather than a guessed directory when the user hasn't set one.
+        rather than a guessed directory when the user hasn't set one. In a
+        single-tree layout (no var_dir) the isf files are in file_dir, so that
+        is returned and neither isf_dir nor isf_var_dir needs setting.
         """
         if self.isf_dir:
-            return self.isf_dir
+            return os.path.normpath(self.isf_dir) + os.sep
         if self.isf_var_dir:
-            return f"{self.base_dir}/{self.suite_id}/{self.isf_var_dir}/"
+            return os.path.normpath(
+                os.path.join(self.suite_dir, self.isf_var_dir)) + os.sep
+        if not self.var_dir:
+            return self.file_dir
         return None
 
     @property
@@ -170,7 +199,7 @@ def _isf(cfg):
     write_isf_timeseries(
         cfg.suite_id, cfg.file_dir, cfg.var_read, cfg.path_out, cfg.out_name,
         cfg.out_varname, cfg.units_out, **cfg.flags)
-    
+
 def _water_flux(cfg):
     write_single_water_flux_timeseries(
         cfg.suite_id, cfg.file_dir, cfg.var_read, cfg.path_out, cfg.out_name,
@@ -219,7 +248,7 @@ def _amoc_pathways(cfg):
     write_amoc_pathways_timeseries(cfg.suite_id, cfg.file_dir, cfg.path_out, cfg.out_name,
                                    varout_name=cfg.varname_out
                                    if isinstance(cfg.varname_out, dict) else None)
-    
+
 TASKS = {
     'nemo_3d':        _nemo_3d,      # thetao, so, uo, vo, thkcello, ...
     'hovemoller':     _hovemoller,   # depth-vs-time of a 3D field

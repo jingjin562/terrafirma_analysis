@@ -62,7 +62,7 @@ def read_SO_shelf_sectors_isf(suite_id, file_dir, var_read, region=None):
             var = np.ma.masked_where(np.broadcast_to(cavity_mask == 0, var.shape), var)
         
         return var
-
+        
 def read_global_isf(suite_id, file_dir, var_read):
 
     year_start, year_end = time_coverage(suite_id)
@@ -127,18 +127,13 @@ def nemo_isf_timeseries(suite_id, file_dir, var_read,
     isf = prep_isf_var(suite_id, file_dir, var_read,
                        if_SO=if_SO, if_continental_shelf=if_continental_shelf,
                        if_global=if_global, if_Arctic_ocean=if_Arctic_ocean)
-    
+
     if var_read == 'sowflisf':
         timeseries = np.sum(kg_per_m2_per_s_to_Gt_per_yr(-isf, area), axis=(1,2))
     elif var_read == 'sohflisf':
         timeseries = np.sum(-isf*area, axis=(1,2))
-    
-    # --- bad data in cx209 ---
-    if suite_id == 'cx209':
-        timeseries[342] = np.nan
-    
-    return timeseries
 
+    return timeseries
 
 def write_isf_timeseries(suite_id, file_dir, var_read, path_out, filename_out, varout_name, units,
                          if_SO=True,
@@ -163,3 +158,21 @@ def write_isf_timeseries(suite_id, file_dir, var_read, path_out, filename_out, v
 
     return print(f'{os.path.join(path_out, filename_out)} is created. \n {varout_name} is saved.')
 
+
+def main():
+    suite_id = 'cx209'
+    var_dir = 'sowflisf'
+    file_dir = f'/home/jingjin/work/terrafirma/{suite_id}/{var_dir}/'
+    var_read = 'sowflisf'
+
+    path_out = "/home/jingjin/work/postpro/misc_data/"
+    filename_out = f"{suite_id}_test_timeseries.nc"
+
+    varout_name = 'basal_mass_loss'
+    units = 'Gt/yr'
+
+    write_isf_timeseries(suite_id, file_dir, var_read, path_out, filename_out, varout_name, units)
+
+
+if __name__ == "__main__":
+    main()

@@ -75,7 +75,7 @@ def SO_sector_basal_mass_loss_timeseries_2d(suite_id, file_dir, var_read, region
     def integ(v):
         return np.sum(kg_per_m2_per_s_to_Gt_per_yr(v, area), axis=(1, 2))    
     return integ(-var) 
-
+    
 # ---------------------------------------------------------------------------
 # Writers
 # ---------------------------------------------------------------------------
@@ -137,5 +137,4 @@ def write_SO_sector_timeseries_2d(suite_id, file_dir, var_read, path_out, filena
         data_var[:] = ts
     finally:
         ncfile.close()
-        
     print(f'{op.join(path_out, filename_out)} is created. \n {len(varout_name)} variables are saved.')

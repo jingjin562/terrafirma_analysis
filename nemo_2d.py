@@ -59,7 +59,7 @@ def read_SO_nemo_2d(suite_id, file_dir, var_read, if_continental_shelf=False):
     return var
 
 def read_SO_shelf_sectors_2d(suite_id, file_dir, var_read, region=None):
-    
+
     year_start, year_end = time_coverage(suite_id)
     year = np.arange(year_start, year_end, 1)
     var = np.empty([len(year), 113, 362])
@@ -248,35 +248,6 @@ def nemo_surface_heat_flux_like_timeseries(suite_id, file_dir, var_read,
 
     return timeseries
 
-def nemo_ice_ocean_heat_flux_timeseries(suite_id, file_dir, var_read='hfds',
-                                        if_SO=True,
-                                        if_continental_shelf=False,
-                                        if_global=False,
-                                        if_Arctic_ocean=False):
-
-    # ---- suitable for sea surface variables like CO2 flux, heat flux (hfds), which have two-sign values (positive and negative)
-    from terrafirma_analysis.io_core import read_area
-
-    if var_read in ['hfds']:
-        var_unmask = prep_var(suite_id, file_dir, var_read,
-                              if_SO=if_SO,
-                              if_continental_shelf=if_continental_shelf,
-                              if_global=if_global,
-                              if_Arctic_ocean=if_Arctic_ocean)
-
-    elif var_read in ['CO2FLUX']:
-        var_unmask = read_medusa_2d(suite_id, file_dir, var_read, if_continental_shelf)
-
-    var = sea_surface_masking(var_unmask, if_SO_focus=_if_SO_focus(if_SO, if_continental_shelf))
-    area = read_area(if_SO_focus=_if_SO_focus(if_SO, if_continental_shelf))
-
-    timeseries = np.nansum(var*area, axis=(1,2))
-
-    if var_read in ['CO2FLUX']:
-        from terrafirma_analysis.utils.conversions import mmolC_per_day_to_Gt_per_yr
-        timeseries = mmolC_per_day_to_Gt_per_yr(timeseries)
-
-    return timeseries
 
 def nemo_2d_timeseries(suite_id, file_dir, var_read,
                        if_SO=True,

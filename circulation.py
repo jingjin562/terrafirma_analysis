@@ -36,7 +36,7 @@ def AMOC_strength_timeseries(suite_id, file_dir):
     # --- The maxium streamfunction at 26.5 N
     print('AMOC strength is being calculating')
     AMOC = read_AMOC_mean(suite_id, file_dir) + read_AMOC_eddy(suite_id, file_dir)
-    AMOC_lat = geodef_CONSTANT('AMOC') # --- 26.5 N
+    AMOC_lat = geodef_CONSTANT('AMOC_265N') # --- 26.5 N
     AMOC_strength = np.max(AMOC[:,:, AMOC_lat], axis=1)
     return AMOC_strength
 

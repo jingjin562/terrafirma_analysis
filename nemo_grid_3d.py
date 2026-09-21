@@ -145,7 +145,6 @@ def read_SO_shelf_sectors(suite_id, file_dir, var_read, grid='T',
         var = np.ma.masked_where(np.broadcast_to(shelf_sector_mask == 0, var.shape), var)
             
         return var
-    
 
 def read_global(suite_id, file_dir, var_read, grid='T', year=None, depth=None,
                 if_mask_isf=False, isf_dir=None):

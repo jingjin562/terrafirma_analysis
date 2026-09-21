@@ -107,11 +107,11 @@ def _opener(year, suite_id,
     return xr.open_dataset(fopen)
 
 def main():
-    suite_id = 'cz826'
+    suite_id = 'cx209'
     path_read = f'/home/jingjin/work/terrafirma/{suite_id}/thetao+so'
-    years = np.arange(1850, 2210+1, 1)
+    years = np.arange(1850, 2237+1, 1)
     
-    for region in ['amundsen_sea', 'ross', 'filchner_ronne', 'amery']:
+    for region in ['pine_island']:
         try:
             out_file = f'/home/jingjin/work/postpro/misc_data/transect_files/{suite_id}_{region}_transect.nc'
             transect_x, transect_y = transect_SO[region]

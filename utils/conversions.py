@@ -20,6 +20,7 @@ def time_coverage(suite_id):
         'cz375': 1992,
         'cz376': 2044,
         'cz377': 2082,
+        'cs495': 1950,
         }
     
     year_end = {
@@ -28,11 +29,12 @@ def time_coverage(suite_id):
         'cw988': 2197,
         'cw989': 2175,
         'cw990': 2202,
-        'dn026': 2212,
+        'dn026': 2219,
         'cy838': 2489,
         'cz375': 2451,
         'cz376': 2573,
         'cz377': 2589,
+        'cs495': 2278,
         }
     
     return year_start[suite_id], year_end[suite_id]+1
@@ -44,3 +46,6 @@ def kg_per_m2_per_s_to_Gt_per_yr(kg_per_m2_per_s, area):
     s2yr = 360 * 24 * 3600
     kg2Gt = 1e-12
     return kg_per_m2_per_s * area * s2yr * kg2Gt
+
+def degree_C_to_K(degree_C):
+    return degree_C+273.15

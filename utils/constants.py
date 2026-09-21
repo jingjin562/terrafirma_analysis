@@ -5,6 +5,10 @@ Created on Tue Jul 28 11:16:50 2026
 
 @author: jingjin
 """
+Cp = 3991.868 # J kg^-1 K^-1 Seawater heat capacity   
+rho_w = 1026.000 # kg m^-3 Reference seawater density    
+rho_ice = 920.000 # kg m^-3 Reference ice-shelf density    
+g = 9.80665 # m s^-2 Gravity parameter
 
 geodef_for_circulation = {
     'AMOC':         228,                 # lat 26.5 N

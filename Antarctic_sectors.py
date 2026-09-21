@@ -20,11 +20,13 @@ from terrafirma_analysis.io_core import (
 from terrafirma_analysis.utils.conversions import time_coverage
 from terrafirma_analysis.utils.mask import sea_surface_masking, mask_zeros
 from terrafirma_analysis.nemo_2d import read_SO_shelf_sectors_2d
+from terrafirma_analysis.isf_module import read_SO_shelf_sectors_isf
 from terrafirma_analysis.nemo_grid_3d import read_SO_shelf_sectors
 from terrafirma_analysis.utils.conversions import kg_per_m2_per_s_to_Gt_per_yr
 
 _PKG_DIR = list(terrafirma_analysis.__path__)[0]
 MASK_PATH = os.path.join(_PKG_DIR, 'utils', 'masks', 'nemo_shelf_mask.nc')
+ISF_MASK_PATH = os.path.join(_PKG_DIR, 'utils', 'masks', 'nemo_cavity_mask.nc')
 
 _DEFAULT_DEPTH = 75
 
@@ -67,6 +69,13 @@ def SO_sector_areainteg_timeseries_2d(suite_id, file_dir, var_read, region=None)
         return np.sum(var*area, axis=(1, 2))   
     return integ(var)
 
+def SO_sector_basal_mass_loss_timeseries_2d(suite_id, file_dir, var_read, region=None):
+    var = read_SO_shelf_sectors_isf(suite_id, file_dir, var_read, region=region)
+    area = read_area(if_SO_focus=True)
+    def integ(v):
+        return np.sum(kg_per_m2_per_s_to_Gt_per_yr(v, area), axis=(1, 2))    
+    return integ(-var) 
+
 # ---------------------------------------------------------------------------
 # Writers
 # ---------------------------------------------------------------------------
@@ -105,6 +114,10 @@ def write_SO_sector_timeseries_2d(suite_id, file_dir, var_read, path_out, filena
         print('units_out is overwritten to "Gt/yr"')
         units = 'Gt/yr'
         ts = SO_sector_water_flux_timeseries_2d(suite_id, file_dir, var_read, region=region)
+    elif var_read in ['sowflisf']:
+        print('units_out is overwritten to "Gt/yr"')
+        units = 'Gt/yr'
+        ts = SO_sector_basal_mass_loss_timeseries_2d(suite_id, file_dir, var_read, region=region)
     elif var_read in ['soicecov']:
         print('sea ice concentration is overwritten to sea ice area')
         units = 'm2'
@@ -124,4 +137,5 @@ def write_SO_sector_timeseries_2d(suite_id, file_dir, var_read, path_out, filena
         data_var[:] = ts
     finally:
         ncfile.close()
+        
     print(f'{op.join(path_out, filename_out)} is created. \n {len(varout_name)} variables are saved.')
